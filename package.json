@@ -1,0 +1,61 @@
+{
+  "name": "nodecg-omnibar",
+  "version": "1.0.0",
+  "description": "Extensible omnibar for nodecg overlays",
+  "main": "dist/nodecg-omnibar.js",
+  "repository": "https://github.com/corvimae/nodecg-omnibar",
+  "author": "Corvimae",
+  "license": "MIT",
+  "scripts": {
+    "watch": "npx parcel watch",
+    "build": "npx parcel build"
+  },
+  "targets": {
+    "graphics": {
+      "source": "src/graphics/omnibar.html",
+      "distDir": "graphics",
+      "publicUrl": "."
+    },
+    "dashboard": {
+      "source": "src/dashboard/omnibar-dashboard.html",
+      "distDir": "dashboard",
+      "publicUrl": "."
+    },
+    "library": {
+      "source": "src/lib/nodecg-omnibar.js",
+      "isLibrary": true,
+      "context": "node",
+      "outputFormat": "commonjs",
+      "distDir": "dist"
+    }
+  },
+  "nodecg": {
+    "compatibleRange": "^1.5.0",
+    "graphics": [
+      {
+        "file": "omnibar.html",
+        "width": 1920,
+        "height": 80
+      }
+    ],
+    "dashboardPanels": [
+      {
+        "name": "omnibar",
+        "title": "Omnibar Controls",
+        "file": "omnibar-dashboard.html",
+        "width": 4
+      }
+    ]
+  },
+  "dependencies": {
+    "handlebars": "^4.7.7",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "styled-components": "^5.3.5",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "parcel": "^2.7.0",
+    "process": "^0.11.10"
+  }
+}
