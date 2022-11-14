@@ -1,4 +1,4 @@
-const { BUNDLE_NAME, createDefaultReplicantState } = require('./src/lib/utils');
+const { BUNDLE_NAME, createDefaultReplicantState, findLastIndex } = require('./src/lib/utils');
 const { v4: uuid } = require('uuid');
 
 const MAIN_LOOP_INTERVAL = 1000;
@@ -6,12 +6,10 @@ const MAIN_LOOP_INTERVAL = 1000;
 module.exports = nodecg => {
   const state = nodecg.Replicant('nodecg-omnibar', BUNDLE_NAME, {
     defaultValue: createDefaultReplicantState(),
+    persistent: false,
   });
 
   let transitionTimeoutId = null;
-
-  // todo temp remove!!!
-  state.value = createDefaultReplicantState();
 
   function getActiveItem() {
     return state.value.carouselQueue.find(({ id }) => id === state.value.activeCarouselItemId);
@@ -109,18 +107,29 @@ module.exports = nodecg => {
     };
 
     nodecg.sendMessageToBundle('updateActiveQueue', BUNDLE_NAME);
-
   });
 
   nodecg.listenFor('enqueueCarouselItem', data => {
     const itemData = createItemData(data);
-    
+
+    let goalIndex = state.value.carouselQueue.length;
+
+    if (data.options.autoGroup) {
+      const lastIndex = findLastIndex(state.value.carouselQueue, item => item.type === data.itemType);
+
+      if (lastIndex !== -1) goalIndex = lastIndex + 1;
+    }
+
     state.value = {
       ...state.value,
-      carouselQueue: [...state.value.carouselQueue, itemData],
+      carouselQueue: [
+        ...state.value.carouselQueue.slice(0, goalIndex),
+        itemData,
+        ...state.value.carouselQueue.slice(goalIndex),
+      ],
     };
   
-    nodecg.sendMessageToBundle('enqueueCarouselItemAck', BUNDLE_NAME, itemData);
+    nodecg.sendMessageToBundle(`enqueueCarouselItemAck-${data.requestId}`, BUNDLE_NAME, itemData);
 
     if (state.value.activeCarouselItemId === null) transitionBetweenItems();
   });
@@ -137,7 +146,7 @@ module.exports = nodecg => {
       overlayQueue: [...state.value.overlayQueue, itemData],
     };
   
-    nodecg.sendMessageToBundle('enqueueOverlayAck', BUNDLE_NAME, itemData);
+    nodecg.sendMessageToBundle(`enqueueOverlayAck-${data.requestId}`, BUNDLE_NAME, itemData);
   });
   
   setInterval(() => {

@@ -1,10 +1,12 @@
 import { BUNDLE_NAME, createDefaultReplicantState } from './utils';
+import { v4 as uuid } from 'uuid';
 
 export class OmnibarInterface {
   constructor(nodecg) {
     this.nodecg = nodecg;
     this.replicant = nodecg.Replicant('nodecg-omnibar', BUNDLE_NAME, {
       defaultValue: createDefaultReplicantState(),
+      persistent: false,
     });
 
     this.factoryModules = nodecg.Replicant('nodecg-omnibar-modules', BUNDLE_NAME, {
@@ -30,13 +32,15 @@ export class OmnibarInterface {
     this.nodecg.sendMessageToBundle('omnibarFactoryRegistered', BUNDLE_NAME, bundleData);
   };
   async enqueueCarouselItem(itemType, config, options = {}) {
+    const requestId = uuid();
     this.nodecg.sendMessageToBundle('enqueueCarouselItem', BUNDLE_NAME, {
+      requestId,
       itemType,
       config,
       options,
     });
 
-    return await this.waitForAck('enqueueCarouselItemAck');
+    return await this.waitForAck(`enqueueCarouselItemAck-${requestId}`);
   }
 
   dequeueCarouselItem(id) {
@@ -44,13 +48,15 @@ export class OmnibarInterface {
   }
 
   async enqueueOverlay(itemType, config, options = {}) {
+    const requestId = uuid();
     this.nodecg.sendMessageToBundle('enqueueOverlay', BUNDLE_NAME, {
+      requestId,
       itemType,
       config,
       options,
     });
 
-    return await this.waitForAck('enqueueOverlayAck');
+    return await this.waitForAck(`enqueueOverlayAck-${requestId}`);
   }
 
   waitForAck(ackEventName) {

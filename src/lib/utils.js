@@ -11,7 +11,18 @@ function createDefaultReplicantState() {
   };
 }
 
+function findLastIndex(array, predicate) {
+  let l = array.length;
+
+  while (l--) {
+    if (predicate(array[l], l, array)) return l;
+  }
+  return -1;
+}
+
 module.exports = {
   BUNDLE_NAME,
-  createDefaultReplicantState
+  createDefaultReplicantState,
+  findLastIndex,
 };
+
