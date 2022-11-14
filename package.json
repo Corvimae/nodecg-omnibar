@@ -8,18 +8,19 @@
   "license": "MIT",
   "scripts": {
     "watch": "npx parcel watch",
-    "build": "npx parcel build"
+    "build": "npx parcel build --no-optimize"
   },
   "targets": {
     "graphics": {
       "source": "src/graphics/omnibar.html",
+      "scopeHoist": false,
       "distDir": "graphics",
-      "publicUrl": "."
+      "publicUrl": "/bundles/nodecg-omnibar/graphics"
     },
     "dashboard": {
       "source": "src/dashboard/omnibar-dashboard.html",
       "distDir": "dashboard",
-      "publicUrl": "."
+      "publicUrl": "/bundles/nodecg-omnibar/dashboard"
     },
     "library": {
       "source": "src/lib/nodecg-omnibar.js",
