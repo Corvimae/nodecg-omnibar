@@ -47,11 +47,15 @@ export const OmnibarApp = () => {
     let nextIndex = currentIndex + 1;
     
     if (currentIndex === omnibarState.carouselQueue.length - 1) nextIndex = 0;
-    
-    setActiveQueue([
-      omnibarState.carouselQueue[currentIndex],
-      omnibarState.carouselQueue[nextIndex],
-    ]);
+
+    if (currentIndex === nextIndex) {
+      setActiveQueue([omnibarState.carouselQueue[currentIndex]]);
+    } else {
+      setActiveQueue([
+        omnibarState.carouselQueue[currentIndex],
+        omnibarState.carouselQueue[nextIndex],
+      ]);
+    }
 
     setShouldUpdateActiveQueue(false);
     activeItemsRef.current.style.top = null;

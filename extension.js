@@ -43,15 +43,17 @@ module.exports = nodecg => {
   }
 
   function transitionBetweenItems() {
-    const currentIndex = getActiveItemIndex();
-
     if (state.value.lockedItemId !== null && state.value.lockedItemId === state.value.activeCarouselItemId) {
       scheduleNextTransition(); 
       
       return;
     }
     
-    if (state.value.carouselQueue.length === 0) return;
+    if (state.value.carouselQueue.length < 2) {
+      scheduleNextTransition();
+      
+      return;
+    }
 
     const nextItem = getNextActiveItem();
 
@@ -111,6 +113,8 @@ module.exports = nodecg => {
 
   nodecg.listenFor('enqueueCarouselItem', data => {
     const itemData = createItemData(data);
+
+    console.log('new', itemData.id);
 
     let goalIndex = state.value.carouselQueue.length;
 
