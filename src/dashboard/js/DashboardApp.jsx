@@ -5,7 +5,7 @@ import { BUNDLE_NAME, createDefaultReplicantState } from '../../lib/utils';
 import { DashboardItem } from './DashboardItem';
 
 export const DashboardApp = () => {
-  const [omnibarState, setOmnibarState] = useReplicant('nodecg-omnibar', createDefaultReplicantState(), { namespace: BUNDLE_NAME });
+  const [omnibarState] = useReplicant('nodecg-omnibar', createDefaultReplicantState(), { namespace: BUNDLE_NAME });
   const [omnibarModules] = useReplicant('nodecg-omnibar-modules', [], { namespace: BUNDLE_NAME });
 
   const sortedItems = useMemo(() => {
@@ -50,6 +50,7 @@ export const DashboardApp = () => {
               config={item}
               omnibarModules={omnibarModules}
               queueIndex={index}
+              isRequestedNext={omnibarState.requestedNextItemId === item.id}
               isActive={omnibarState.activeCarouselItemId === item.id}
               isLocked={omnibarState.lockedItemId === item.id}
             />

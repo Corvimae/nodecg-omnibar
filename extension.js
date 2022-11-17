@@ -20,6 +20,9 @@ module.exports = nodecg => {
   }
 
   function getNextActiveItem() {
+    if (state.value.requestedNextItemId) {
+      return state.value.carouselQueue.find(({ id }) => id === state.value.requestedNextItemId);
+    }
     const currentIndex = getActiveItemIndex();
 
     if (currentIndex === -1 || currentIndex === state.value.carouselQueue.length - 1) {
@@ -60,9 +63,10 @@ module.exports = nodecg => {
     state.value = {
       ...state.value,
       activeCarouselItemId: nextItem.id,
+      requestedNextItemId: null,
     };
 
-    nodecg.sendMessageToBundle('transitionBetweenItems', BUNDLE_NAME);
+    nodecg.sendMessageToBundle('transitionBetweenItems', BUNDLE_NAME, { pendingItemId: nextItem.id });
 
     scheduleNextTransition();
   }
@@ -97,24 +101,17 @@ module.exports = nodecg => {
 
   nodecg.listenFor('prioritizeItem', data => {
     const item = getItem(data.id);
-    const restOfQueue = state.value.carouselQueue.filter(({ id }) => id !== item.id);
+
+    if (!item) return;
 
     state.value = {
       ...state.value,
-      carouselQueue: [
-        restOfQueue[0],
-        item,
-        ...restOfQueue.slice(1),
-      ],
-    };
-
-    nodecg.sendMessageToBundle('updateActiveQueue', BUNDLE_NAME);
+      requestedNextItemId: item.id,
+    }
   });
 
   nodecg.listenFor('enqueueCarouselItem', data => {
     const itemData = createItemData(data);
-
-    console.log('new', itemData.id);
 
     let goalIndex = state.value.carouselQueue.length;
 

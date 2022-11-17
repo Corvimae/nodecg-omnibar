@@ -8,6 +8,7 @@ function createDefaultReplicantState() {
     activeCarouselItemId: null,
     activeOverlayItemId: null,
     lockedItemId: null,
+    requestedNextItemId: null,
   };
 }
 

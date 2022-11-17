@@ -2,7 +2,7 @@ import React, { useCallback, useMemo } from 'react';
 import styled from 'styled-components';
 import Handlebars from 'handlebars';
 
-export const DashboardItem = ({ config, omnibarModules, isActive, isLocked, isOverlay, queueIndex }) => {
+export const DashboardItem = ({ config, omnibarModules, isActive, isLocked, isOverlay, isRequestedNext, queueIndex }) => {
   const template = useMemo(() => {
     const module = omnibarModules.find(item => item.itemType === config.type);
     
@@ -18,11 +18,12 @@ export const DashboardItem = ({ config, omnibarModules, isActive, isLocked, isOv
   }, [config.id]);
 
   return (
-    <ListItem isActive={isActive}>
+    <ListItem isActive={isActive} isRequestedNext={isRequestedNext}>
+      {isRequestedNext && '(NEXT) '}
       {template(config.data)}
       <ItemActions>
         {!isOverlay && (
-          <ActionButton onClick={prioritizeItem} disabled={queueIndex <= 1}>^</ActionButton>
+          <ActionButton onClick={prioritizeItem} disabled={queueIndex <= 1 || isRequestedNext}>^</ActionButton>
         )}
         {!isOverlay && (
           <ActionButton onClick={toggleLock}>{isLocked ? 'Unlock' : 'Lock'}</ActionButton>
@@ -40,7 +41,12 @@ const ListItem = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 0.25rem;
-  background-color: ${({ isActive }) => isActive ?  'rgba(132, 206, 132, 0.85)' : 'rgba(255, 255, 255, 0.85)'};
+  background-color: ${({ isActive, isRequestedNext }) => {
+    if (isActive) return 'rgba(132, 206, 132, 0.85)';
+    if (isRequestedNext) return 'rgba(241, 206, 47, 0.85)';
+    
+    return 'rgba(255, 255, 255, 0.85)';
+  }};
   border: 1px solid rgba(0, 0, 0, 0.4);
   color: #000;
   box-sizing: border-box;

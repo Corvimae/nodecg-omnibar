@@ -12,8 +12,9 @@ export const OmnibarApp = () => {
   const activeItemsRef = useRef();
   const [omnibarState, setOmnibarState] = useReplicant('nodecg-omnibar', createDefaultReplicantState(), { namespace: BUNDLE_NAME });
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [activeQueue, setActiveQueue] = useState([]);
-  const [shouldUpdateActiveQueue, setShouldUpdateActiveQueue] = useState(true);
+  const [activeItem, setActiveItem] = useState([]);
+  const [pendingItem, setPendingItem] = useState([]);
+  const [shouldCleanupTransition, setShouldCleanupTransition] = useState(true);
   const hasInitialized = useRef(false);
 
   const registerOmnibarItem = useCallback((itemName, callback) => {
@@ -39,28 +40,24 @@ export const OmnibarApp = () => {
   };
 
   useEffect(() => {
-    if (!shouldUpdateActiveQueue) return;
+    if (!hasInitialized.current && omnibarState.carouselQueue.length !== 0) {
+      const currentIndex = omnibarState.carouselQueue.findIndex(({ id }) => id === omnibarState.activeCarouselItemId);
+      const startingItem = omnibarState.carouselQueue[currentIndex];
+      setActiveItem(startingItem);
 
-    if (!hasInitialized.current && omnibarState.carouselQueue.length === 0) return;
+      hasInitialized.current = true;
 
-    const currentIndex = omnibarState.carouselQueue.findIndex(({ id }) => id === omnibarState.activeCarouselItemId);
-    let nextIndex = currentIndex + 1;
-    
-    if (currentIndex === omnibarState.carouselQueue.length - 1) nextIndex = 0;
-
-    if (currentIndex === nextIndex) {
-      setActiveQueue([omnibarState.carouselQueue[currentIndex]]);
-    } else {
-      setActiveQueue([
-        omnibarState.carouselQueue[currentIndex],
-        omnibarState.carouselQueue[nextIndex],
-      ]);
+      return;
     }
 
-    setShouldUpdateActiveQueue(false);
+    if (!shouldCleanupTransition) return;
+
+    setActiveItem(pendingItem);
+
+    setPendingItem(null);
+    setShouldCleanupTransition(false);
     activeItemsRef.current.style.top = null;
-    hasInitialized.current = true;
-  }, [omnibarState.activeCarouselItemId, omnibarState.carouselQueue, shouldUpdateActiveQueue]);
+  }, [omnibarState.activeCarouselItemId, omnibarState.carouselQueue, shouldCleanupTransition, pendingItem]);
 
   const activeOverlayItem = useMemo(() => {
     if (!omnibarState.activeOverlayItemId) return null;
@@ -68,7 +65,17 @@ export const OmnibarApp = () => {
     return omnibarState.overlayQueue.find(({ id }) => id === omnibarState.activeOverlayItemId);
   }, [omnibarState.overlayQueue, omnibarState.activeOverlayItemId]);
 
-  useListenFor('transitionBetweenItems', () => {
+  useListenFor('transitionBetweenItems', ({ pendingItemId }) => { 
+    const pendingItemFromServer = omnibarState.carouselQueue.find(({ id }) => id === pendingItemId);
+
+    if (!pendingItemFromServer) return;
+
+    if (pendingItemFromServer.id !== activeItem.id) {
+      setPendingItem(pendingItemFromServer);
+    } else {
+      return;
+    }
+
     setIsTransitioning(true);
 
     const transitionAnimation = activeItemsRef.current.animate([
@@ -81,7 +88,7 @@ export const OmnibarApp = () => {
     
     const onFinish = () => {
       setIsTransitioning(false);
-      setShouldUpdateActiveQueue(true);
+      setShouldCleanupTransition(true);
       activeItemsRef.current.style.top = '-100%';
       transitionAnimation.removeEventListener('finish', onFinish);
     };
@@ -89,23 +96,27 @@ export const OmnibarApp = () => {
     transitionAnimation.addEventListener('finish', onFinish, { once: true });
   }, { namespace: BUNDLE_NAME });
   
-  useListenFor('updateActiveQueue', () => {
-    setShouldUpdateActiveQueue(true);
-  }, { namespace: BUNDLE_NAME });
-  
   return (
     <Container>
       <ActiveItems ref={activeItemsRef}>
-        {activeQueue.map(config => config && (
+        <OmnibarItem 
+          key={activeItem.id} 
+          config={activeItem}
+          isActive={omnibarState.activeCarouselItemId === activeItem.id}
+          isLocked={omnibarState.lockedItemId === activeItem.id}
+          isTransitioning={isTransitioning}
+          factories={factories} 
+        />
+        {pendingItem && (
           <OmnibarItem 
-            key={config.id} 
-            config={config}
-            isActive={omnibarState.activeCarouselItemId === config.id}
-            isLocked={omnibarState.lockedItemId === config.id}
+            key={pendingItem.id} 
+            config={pendingItem}
+            isActive={omnibarState.activeCarouselItemId === pendingItem.id}
+            isLocked={omnibarState.lockedItemId === pendingItem.id}
             isTransitioning={isTransitioning}
             factories={factories} 
           />
-        ))}
+        )}
       </ActiveItems>
       {activeOverlayItem && (
         <OverlayContainer>
@@ -146,8 +157,6 @@ const ActiveItems = styled.div`
   left: 0;
   width: 100%;
   height: 100%;
-  /* animation: ${TRANSITION_DURATION_MS}ms ease-in-out ${({ isTransitioning }) => isTransitioning ? transitionAnimation : null}; */
-  /* animation-fill-mode: forwards; */
 `;
 
 const OverlayContainer = styled.div`
@@ -157,4 +166,4 @@ const OverlayContainer = styled.div`
   left: 0;
   top: 0;
   z-index: 2;
-`;
+`;                                                                                                                
