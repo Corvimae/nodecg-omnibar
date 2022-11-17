@@ -1,6 +1,6 @@
 {
   "name": "nodecg-omnibar",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Extensible omnibar for nodecg overlays",
   "main": "dist/nodecg-omnibar.js",
   "repository": "https://github.com/corvimae/nodecg-omnibar",
