@@ -1,6 +1,6 @@
 {
   "name": "nodecg-omnibar",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Extensible omnibar for nodecg overlays",
   "main": "dist/nodecg-omnibar.js",
   "repository": "https://github.com/corvimae/nodecg-omnibar",
@@ -55,9 +55,9 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
+    "handlebars": "^4.7.7",
     "parcel": "^2.7.0",
     "process": "^0.11.10",
-    "handlebars": "^4.7.7",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "styled-components": "^5.3.5"
