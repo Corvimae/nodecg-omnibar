@@ -9,6 +9,8 @@ function createDefaultReplicantState() {
     activeOverlayItemId: null,
     lockedItemId: null,
     requestedNextItemId: null,
+    nextTransitionTime: Date.now(),
+    activeCarouselItemDuration: 5000,
   };
 }
 

@@ -1,12 +1,14 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { useReplicant } from '../../lib/hooks';
+import { useListenFor, useOnMount, useReplicant } from '../../lib/hooks';
 import { BUNDLE_NAME, createDefaultReplicantState } from '../../lib/utils';
 import { DashboardItem } from './DashboardItem';
 
 export const DashboardApp = () => {
   const [omnibarState] = useReplicant('nodecg-omnibar', createDefaultReplicantState(), { namespace: BUNDLE_NAME });
   const [omnibarModules] = useReplicant('nodecg-omnibar-modules', [], { namespace: BUNDLE_NAME });
+  const [activeProgressPercent, setActiveProgressPercent] = useState(0);
+  const syncOffset = useRef(0);
 
   const sortedItems = useMemo(() => {
     const startingIndex = omnibarState.carouselQueue.findIndex(({ id }) => omnibarState.activeCarouselItemId === id);
@@ -18,6 +20,25 @@ export const DashboardApp = () => {
       ...omnibarState.carouselQueue.slice(0, startingIndex),
     ];
   }, [omnibarState.carouselQueue, omnibarState.activeCarouselItemId]);
+
+  const updateCompletionPercent = useCallback(() => {
+    const timeUntilCompletion = omnibarState.nextTransitionTime - Date.now() + syncOffset.current;
+    const percentage = (omnibarState.activeCarouselItemDuration - timeUntilCompletion) / omnibarState.activeCarouselItemDuration;
+
+    setActiveProgressPercent(Math.max(0, percentage));
+  }, [omnibarState.nextTransitionTime, omnibarState.activeCarouselItemDuration]);
+
+  useListenFor('transitionScheduled', ({ time }) => {
+    syncOffset.current = Date.now() - time;
+  }, { namespace: BUNDLE_NAME });
+
+  useEffect(() => {
+    const intervalId = setInterval(updateCompletionPercent, 100);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [updateCompletionPercent]);
   
   return (
     <Container>
@@ -42,7 +63,7 @@ export const DashboardApp = () => {
         {omnibarState.lockedItemId !== null && (
           <LockedItemIndicator currentItemLocked={omnibarState.lockedItemId === omnibarState.activeCarouselItemId}/>
         )}
-        <ActiveItemIndicator />
+        <ActiveItemIndicator percentage={activeProgressPercent} />
         <ItemList>
           {sortedItems.map((item, index) => (
             <DashboardItem
@@ -96,6 +117,16 @@ const ActiveItemIndicator = styled.div`
     rgba(0, 0, 0, 0.3) 10px,
     rgba(0, 0, 0, 0.3) 20px
   );
+
+  &:after {
+    content: ' ';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: ${({ percentage }) => percentage * 100}%;
+    height: 100%;
+    background-color: rgba(150, 255, 124, 0.5);
+  }
 `;
 
 const LockedItemIndicator = styled.div`

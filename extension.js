@@ -43,6 +43,16 @@ module.exports = nodecg => {
 
     if (transitionTimeoutId) clearTimeout(transitionTimeoutId);
     transitionTimeoutId = setTimeout(transitionBetweenItems, duration);
+    
+    const time = Date.now();
+
+    state.value = {
+      ...state.value,
+      nextTransitionTime: time + duration,
+      activeCarouselItemDuration: duration,
+    };
+
+    nodecg.sendMessageToBundle('transitionScheduled', BUNDLE_NAME, { time });
   }
 
   function transitionBetweenItems() {
