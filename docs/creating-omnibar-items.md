@@ -115,8 +115,8 @@ Overlays cannot be dequeued; they are automatically removed from the queue once 
 In your front-end script file (default: `dist/omnibar-item.js`), call `registerOmnibarItem(typeName, factoryMethod)`.
 
 ```js
-registerOmnibarItem('breaking-news', ({ message }) => {
-  return `Breaking news!!!! ${message}`.
+registerOmnibarItem('breaking-news', ({ data }) => {
+  return `Breaking news!!!! ${data.message}`.
 });
 ```
 
