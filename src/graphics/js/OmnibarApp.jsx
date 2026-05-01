@@ -97,7 +97,7 @@ export const OmnibarApp = () => {
   }, { namespace: BUNDLE_NAME });
   
   return (
-    <Container>
+    <Container height={omnibarState?.height ?? 80}>
       <ActiveItems ref={activeItemsRef}>
         <OmnibarItem 
           key={activeItem.id} 
@@ -134,7 +134,7 @@ export const OmnibarApp = () => {
 
 const Container = styled.div`
   position: relative;
-  height: 80px;
+  height: ${({ height }) => height}px;
   width: 100vw;
   background-color: #212121;
   color: #fff;

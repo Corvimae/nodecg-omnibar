@@ -5,7 +5,7 @@ export class OmnibarInterface {
   constructor(nodecg) {
     this.nodecg = nodecg;
     this.replicant = nodecg.Replicant('nodecg-omnibar', BUNDLE_NAME, {
-      defaultValue: createDefaultReplicantState(),
+      defaultValue: createDefaultReplicantState(nodecg),
       persistent: false,
     });
 

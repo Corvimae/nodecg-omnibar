@@ -5,7 +5,7 @@ const MAIN_LOOP_INTERVAL = 1000;
 
 module.exports = nodecg => {
   const state = nodecg.Replicant('nodecg-omnibar', BUNDLE_NAME, {
-    defaultValue: createDefaultReplicantState(),
+    defaultValue: createDefaultReplicantState(nodecg),
     persistent: false,
   });
 

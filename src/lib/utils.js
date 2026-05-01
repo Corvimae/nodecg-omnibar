@@ -1,6 +1,6 @@
 const BUNDLE_NAME = 'nodecg-omnibar';
 
-function createDefaultReplicantState() {
+function createDefaultReplicantState(nodecg) {
   return {
     overlayQueue: [],
     carouselQueue: [],
@@ -11,6 +11,7 @@ function createDefaultReplicantState() {
     requestedNextItemId: null,
     nextTransitionTime: Date.now(),
     activeCarouselItemDuration: 5000,
+    height: nodecg?.bundleConfig.height ?? 80,
   };
 }
 
