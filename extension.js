@@ -97,6 +97,11 @@ module.exports = nodecg => {
 
     if (!item) {
       console.error(`Unable to lock item ${data.id} - item not found.`);
+
+      state.value = {
+        ...state.value,
+        lockedItemId: null,
+      };
       
       return;
     }
